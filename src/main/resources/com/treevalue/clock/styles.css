@@ -1,0 +1,65 @@
+/* Root style with a gentle pale green theme */
+.root {
+    -fx-font-family: 'Helvetica';
+    -fx-base: #E3F2F9; /* Soft pale green as the base color */
+    -fx-font-weight: bold;
+    /*set backpicture*/
+    -fx-background-image: url('./img/2023-12-23.png');
+    -fx-background-size: cover; /* ???? 'contain' ???? */
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center center;
+    /*set backpicture*/
+}
+
+.label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #fbf000; /* A soft forest green for text */
+}
+
+.button {
+    -fx-background-color: linear-gradient(#f0f5f3, #cde8d1),
+    linear-gradient(#f7fdf6, #e3f2f9);
+    -fx-background-radius: 5;
+    -fx-padding: 5 10;
+    -fx-text-fill: #2E8B57; /* Forest green text */
+    -fx-font-size: 13px;
+}
+
+.text-field {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 5;
+}
+
+.combo-box {
+    -fx-background-radius: 5;
+}
+
+.slider {
+    -fx-control-inner-background: #f3f3f3;
+}
+
+/* Enhanced time display label style with a pale green touch */
+#timeDisplay {
+    -fx-background-color: #DCF2E9; /* Very soft green background */
+    -fx-background-radius: 10;
+    -fx-font-family: 'Consolas Italic';
+    -fx-font-size: 38px;
+    -fx-text-fill: #2E8B57; /* Forest green for time display */
+}
+
+#alarmTime {
+    -fx-border-radius: 5;
+}
+
+.large-text {
+    -fx-font-family: 'Consolas';
+    -fx-font-size: 35px; /* ???????? */
+    -fx-text-fill: #2E8B57; /* ???? */
+}
+
+.background-box {
+    -fx-background-image: url('background.jpg');
+    -fx-background-size: cover; /* ???? 'contain' ???? */
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center center;
+}
