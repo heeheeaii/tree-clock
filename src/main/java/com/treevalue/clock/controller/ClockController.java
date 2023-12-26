@@ -18,6 +18,7 @@ import javazoom.jl.player.advanced.AdvancedPlayer;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -45,8 +46,7 @@ public class ClockController {
 
     @FXML
     private Button playBt;
-    @FXML
-    private Button stopBt;
+
     @FXML
     private Button ensureBt;
 
@@ -139,6 +139,30 @@ public class ClockController {
         timeDisplay.setText(sdf.format(new Date()));
     }
 
+    private void timerOptionsSetAlarmTime(String timerOptionsText) {
+//       HH:mm:ss
+        LocalTime aMoment = LocalTime.now();
+        int hours, minutes, seconds;
+        minutes = timerOptionValueToInt(timerOptionsText);
+        minutes += aMoment.getMinute();
+        hours = (aMoment.getHour() + (minutes) / 60) % 24;
+        minutes %= 60;
+        seconds = aMoment.getSecond();
+        StringBuilder sb = new StringBuilder();
+        if (hours < 10) {
+            sb.append("0");
+        }
+        sb.append(hours).append(":");
+        if (minutes < 10) {
+            sb.append("0");
+        }
+        sb.append(minutes).append(":");
+        if (seconds < 10) {
+            sb.append("0");
+        }
+        sb.append(seconds);
+        alarmTime.setText(sb.toString());
+    }
 
     private void initializeTimerOptions() {
         ObservableList<String> timerOptionsList = FXCollections.observableArrayList("7 min", "17 min", "30 min");
@@ -146,6 +170,15 @@ public class ClockController {
         if (!timerOptionsList.isEmpty()) {
             timerOptions.setValue(timerOptionsList.get(0));
         }
+        timerOptionsSetAlarmTime(timerOptions.getValue());
+        timerOptions.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
+            timerOptionsSetAlarmTime(newValue);
+        });
+    }
+
+    private int timerOptionValueToInt(String timerOp) {
+        // newValue must > 0
+        return Math.abs(Integer.valueOf(timerOp.split(" ")[0]));
     }
 
     private void initializeRingtoneOptions() {
@@ -264,8 +297,19 @@ public class ClockController {
     }
 
     private void initializePlayStopButtons() {
-        playBt.setOnAction(e -> playSelectedSong());
-        stopBt.setOnAction(e -> stopPlayingSong());
+        playBt.setOnAction(e -> whenPlayButtonChange());
+    }
+
+    private void whenPlayButtonChange() {
+        var playStr = "Play";
+        var stopStr = "Stop";
+        if (playStr.equals(playBt.getText())) {
+            playBt.setText(stopStr);
+            playSelectedSong();
+        } else {
+            playBt.setText(playStr);
+            stopPlayingSong();
+        }
     }
 
     private void stopAdPlayer() {

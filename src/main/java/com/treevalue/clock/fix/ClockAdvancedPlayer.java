@@ -54,7 +54,23 @@ public class ClockAdvancedPlayer {
 
     private static long getSongTotalLength() {
         if (bis == null) {
-            return 0;
+            try {
+                bis = new BufferedInputStream(new FileInputStream(filePath));
+                if (bis == null) {
+                    return 0;
+                }
+                return bis.available();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    bis.close();
+                    bis = null;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
         }
         try {
             return bis.available();
@@ -146,7 +162,7 @@ public class ClockAdvancedPlayer {
             while (clockAlarmData.allowRun) {
                 aMoment = LocalTime.now();
                 if (aMoment.getHour() == clockAlarmData.hour && aMoment.getMinute() == clockAlarmData.minute
-                        && Math.abs(aMoment.getSecond() - clockAlarmData.second) <= 3) {
+                        && Math.abs(aMoment.getSecond() - clockAlarmData.second) < 2) {
                     LocalTime begingTime = LocalTime.now();
                     AtomicBoolean finishOnce = new AtomicBoolean(false);
                     while (clockAlarmData.allowRun && timeIn(begingTime, 900)) {

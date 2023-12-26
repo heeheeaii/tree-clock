@@ -11,16 +11,13 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="200.0" prefWidth="300.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.treevalue.clock.controller.ClockController"> <!-- Link to the CSS file -->
+<AnchorPane prefHeight="200.0" prefWidth="300.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.treevalue.clock.controller.ClockController"> <!-- Link to the CSS file -->
     <VBox xmlns:fx="http://javafx.com/fxml">
         <!-- 第一栏：显示时间 -->
         <HBox>
-            <Label fx:id="timeDisplay" alignment="CENTER" prefHeight="55.0" prefWidth="362.0" styleClass="combo-box"
-                   text=" 12:00:00" textAlignment="CENTER" textOverrun="CLIP">
+            <Label fx:id="timeDisplay" alignment="CENTER" prefHeight="55.0" prefWidth="362.0" styleClass="combo-box" text=" 12:00:00" textAlignment="CENTER" textOverrun="CLIP">
                 <font>
-                    <Font name="Consolas Italic" size="38.0"/>
+                    <Font name="Consolas Italic" size="38.0" />
                 </font>
             </Label>
             <!-- 数码管样式需要通过CSS或其他方式实现 -->
@@ -30,14 +27,13 @@
         <HBox>
             <Label fx:id="almLb" prefHeight="39.0" prefWidth="73.0" text="Alarm      :">
                 <font>
-                    <Font name="Consolas" size="33.0"/>
+                    <Font name="Consolas" size="33.0" />
                 </font>
             </Label>
-            <Region prefHeight="0.0" prefWidth="6.0"/>
-            <TextField fx:id="alarmTime" alignment="CENTER" prefHeight="51.0" prefWidth="282.0" promptText="HH:MM:SS"
-                       styleClass="large-text" text="HH:mm:ss">
+            <Region prefHeight="0.0" prefWidth="6.0" />
+            <TextField fx:id="alarmTime" alignment="CENTER" prefHeight="0.0" prefWidth="282.0" promptText="HH:MM:SS" styleClass="large-text" text="HH:mm:ss">
                 <font>
-                    <Font name="Consolas" size="30.0"/>
+                    <Font name="Consolas" size="30.0" />
                 </font>
             </TextField>
             <!-- 时间选择器组件或其他逻辑可在此实现 -->
@@ -45,12 +41,12 @@
 
         <!-- 第三栏：计时器和时间选择 -->
         <HBox>
-            <Label prefHeight="41.0" prefWidth="73.0" text="Timer       :">
+            <Label prefHeight="0.0" prefWidth="73.0" text="Timer       :">
                 <font>
-                    <Font name="Consolas" size="33.0"/>
+                    <Font name="Consolas" size="33.0" />
                 </font>
             </Label>
-            <Region prefHeight="0.0" prefWidth="7.0"/>
+            <Region prefHeight="0.0" prefWidth="7.0" />
             <ComboBox fx:id="timerOptions" prefHeight="39.0" prefWidth="280.0" promptText="7 min">
                 <!-- 这里的选项可以在控制器中初始化 -->
             </ComboBox>
@@ -58,42 +54,40 @@
 
         <!-- 第四栏：铃声设置 -->
         <HBox>
-            <Label prefHeight="33.0" prefWidth="70.0" text="Ringtone :">
+            <Label prefHeight="0.0" prefWidth="70.0" text="Ringtone :">
                 <font>
-                    <Font name="Consolas" size="33.0"/>
+                    <Font name="Consolas" size="33.0" />
                 </font>
             </Label>
-            <Label/>
-            <Region prefHeight="0.0" prefWidth="9.0"/>
-            <ComboBox fx:id="ringtoneOptions" prefHeight="34.0" prefWidth="145.0" promptText="我在那一个角落患过伤风">
+            <Label />
+            <Region prefHeight="0.0" prefWidth="9.0" />
+            <ComboBox fx:id="ringtoneOptions" prefHeight="42.0" prefWidth="213.0" promptText="我在那一个角落患过伤风">
                 <!-- 铃声选项在控制器中设置 -->
             </ComboBox>
-            <Region prefHeight="0.0" prefWidth="15.0"/>
-            <Button fx:id="playBt" minWidth="53.0" prefHeight="33.0" prefWidth="53.0" text="Play"/>
-            <Region prefHeight="0.0" prefWidth="11.0"/>
-            <Button fx:id="stopBt" minWidth="53.0" prefHeight="34.0" prefWidth="57.0" text="Stop"/>
+            <Region prefHeight="0.0" prefWidth="11.0" />
+            <Button fx:id="playBt" minHeight="3.0" minWidth="53.0" prefHeight="43.0" prefWidth="59.0" text="Play" />
+<!--            <Region prefHeight="0.0" prefWidth="11.0"/>-->
+<!--            <Button fx:id="stopBt" minWidth="53.0" prefHeight="34.0" prefWidth="57.0" text="Stop"/>-->
         </HBox>
 
         <!-- 第五栏：响铃begin设置 -->
         <HBox>
-            <Label prefHeight="29.0" prefWidth="74.0" text="Volume   :">
+            <Label prefHeight="0.0" prefWidth="74.0" text="Volume   :">
                 <font>
-                    <Font name="Consolas" size="33.0"/>
+                    <Font name="Consolas" size="33.0" />
                 </font>
             </Label>
-            <Label/>
-            <Region prefHeight="0.0" prefWidth="7.0"/>
-            <Slider fx:id="durationSlider" max="15" min="0" prefHeight="24.0" prefWidth="184.0" value="15"/>
-            <Label fx:id="dratLb" alignment="CENTER" prefHeight="31.0" prefWidth="39.0" text="0"
-                   textAlignment="CENTER"/>
-            <Button fx:id="tryBt" mnemonicParsing="false" prefHeight="30.0" prefWidth="58.0" text="try"/>
+            <Label />
+            <Region prefHeight="0.0" prefWidth="7.0" />
+            <Slider fx:id="durationSlider" max="15" min="0" prefHeight="0.0" prefWidth="184.0" value="15" />
+            <Label fx:id="dratLb" alignment="CENTER" prefHeight="31.0" prefWidth="39.0" text="0" textAlignment="CENTER" />
+            <Button fx:id="tryBt" minHeight="0.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="58.0" text="try" />
             <!-- 滑动条用于选择时长 -->
         </HBox>
         <HBox alignment="CENTER_RIGHT" prefHeight="39.0" prefWidth="361.0">
-            <Button fx:id="ensureBt" layoutX="130.0" minWidth="49.0" prefHeight="31.0" prefWidth="64.0"
-                    styleClass="button" text="Ensure"/>
-            <Region prefHeight="31.0" prefWidth="21.0"/>
-            <Button fx:id="stopAlarmBt" layoutX="30.0" prefHeight="31.0" prefWidth="65.0" styleClass="button" text="Cancel"/>
+            <Button fx:id="ensureBt" layoutX="130.0" minHeight="0.0" minWidth="49.0" prefHeight="36.0" prefWidth="64.0" styleClass="button" text="Ensure" />
+            <Region prefHeight="31.0" prefWidth="21.0" />
+            <Button fx:id="stopAlarmBt" layoutX="30.0" prefHeight="35.0" prefWidth="65.0" styleClass="button" text="Cancel" />
         </HBox>
     </VBox>
 </AnchorPane>
