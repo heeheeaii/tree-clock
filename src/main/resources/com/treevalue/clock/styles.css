@@ -18,11 +18,12 @@
 
 .button {
     -fx-background-color: linear-gradient(#f0f5f3, #cde8d1),
-    linear-gradient(#f7fdf6, #e3f2f9);
+linear-gradient(#f7fdf6, #e3f2f9);
     -fx-background-radius: 5;
     -fx-padding: 5 10;
     -fx-text-fill: #2E8B57; /* Forest green text */
     -fx-font-size: 13px;
+    -fx-font-weight: bold;
 }
 
 .text-field {
@@ -45,6 +46,7 @@
     -fx-font-family: 'Consolas Italic';
     -fx-font-size: 38px;
     -fx-text-fill: #2E8B57; /* Forest green for time display */
+
 }
 
 #alarmTime {
@@ -58,7 +60,7 @@
 }
 
 .background-box {
-    -fx-background-image: url('background.jpg');
+    /*-fx-background-image: url('background.jpg');*/
     -fx-background-size: cover; /* ???? 'contain' ???? */
     -fx-background-repeat: no-repeat;
     -fx-background-position: center center;

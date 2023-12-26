@@ -1,33 +1,30 @@
 package com.treevalue.clock.func;
 
-import com.treevalue.clock.fix.AdvancedPlayerData;
 import com.treevalue.clock.thread.ClockThreadPool;
 import com.treevalue.clock.util.FileUtil;
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.Player;
-import javazoom.jl.player.advanced.AdvancedPlayer;
 
 import java.io.*;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.concurrent.Future;
 
 /**
  * @author hee
  */
 public class Clock {
 
-    private int hours;
-    private int minutes;
-    private int seconds;
-    private int timer;
+    public int hours;
+    public int minutes;
+    public int seconds;
+    public int timer;
 
-    private String ringtone;
+    public String ringtone;
 
-    private int volume;
+    public int volume;
 
-    private boolean ensure;
-    private boolean ring;
+    public boolean ensure;
+    public boolean ring;
 
     static Clock singleInstance;
 
@@ -38,6 +35,8 @@ public class Clock {
     private volatile Player player = null;
 
     private volatile BufferedInputStream bis = null;
+
+    public String mp3Name;
 
     public Clock() {
         init();
@@ -85,32 +84,29 @@ public class Clock {
     }
 
     public void playMp3(String mp3name) {
+        if (player != null || bis != null) {
+            closePlayer();
+        }
+
         String absolutePath = mp3nameToPath(mp3name);
         try {
             bis = new BufferedInputStream(new FileInputStream(absolutePath));
             player = new Player(bis);
-//            if(AdvancedPlayerData.future!=null){
-//                if(!AdvancedPlayerData.future.isDone()){
-//                    AdvancedPlayerData.future.cancel(true);
-//                }
-//            }
-            AdvancedPlayerData.future = ClockThreadPool.pool.submit(
-                    () -> {
-                        try {
-                            player.play();
-                        } catch (JavaLayerException e) {
-                            throw new RuntimeException(e);
-                        }
-                        if (bis != null) {
-                            try {
-                                bis.close();
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-
+            ClockThreadPool.pool.execute(() -> {
+                try {
+                    player.play();
+                } catch (JavaLayerException e) {
+                    throw new RuntimeException(e);
+                }
+                if (bis != null) {
+                    try {
+                        bis.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
-            );
+                }
+
+            });
         } catch (FileNotFoundException | JavaLayerException e) {
             throw new RuntimeException(e);
         }
@@ -145,41 +141,8 @@ public class Clock {
             }
             bis = null;
         }
-        AdvancedPlayerData.hasCloseSimplePlayer = true;
     }
 
-    public void changePosition(int percentage) {
-        if (percentage < 0 || percentage > 100) {
-            throw new IllegalArgumentException("Percentage must be between 0 and 100");
-        }
-        if (!AdvancedPlayerData.hasCloseSimplePlayer) {
-            closePlayer();
-        }
-        long pauseLocation;
-        try {
-            pauseLocation = (AdvancedPlayerData.songTotalLength * percentage) / 100;
-            AdvancedPlayerData.bis = new BufferedInputStream(new FileInputStream(AdvancedPlayerData.filePath));
-            AdvancedPlayerData.bis.skip(pauseLocation);
-            if (AdvancedPlayerData.future != null && !AdvancedPlayerData.future.isDone()) {
-                AdvancedPlayerData.future.cancel(true);
-                AdvancedPlayerData.advancedPlayer.close();
-            }
-            AdvancedPlayerData.advancedPlayer = new AdvancedPlayer(AdvancedPlayerData.bis);
-            AdvancedPlayerData.future = ClockThreadPool.pool.submit(() -> {
-                try {
-                    AdvancedPlayerData.advancedPlayer.play();
-                } catch (JavaLayerException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (JavaLayerException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private static class SgltHolder {
         private static final Clock INSTANCE = new Clock();
@@ -213,6 +176,7 @@ public class Clock {
     public String displayTime() {
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
+
 
     public static void main(String[] args) {
         Clock clock = new Clock();

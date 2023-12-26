@@ -1,6 +1,7 @@
 package com.treevalue.clock.controller;
 
-import com.treevalue.clock.fix.AdvancedPlayerData;
+import com.treevalue.clock.data.ClockAlarmData;
+import com.treevalue.clock.fix.ClockAdvancedPlayer;
 import com.treevalue.clock.func.Clock;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -12,20 +13,23 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.util.Duration;
+import javazoom.jl.decoder.JavaLayerException;
+import javazoom.jl.player.advanced.AdvancedPlayer;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.net.URL;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import javax.sound.sampled.*;
+import static com.treevalue.clock.fix.ClockAdvancedPlayer.bis;
 
 public class ClockController {
 
     private Clock alarmClock = Clock.getSingleton();
+
+    @FXML
+    private Button tryBt;
+
 
     @FXML
     private TextField alarmTime;
@@ -34,7 +38,7 @@ public class ClockController {
     private Label timeDisplay;
 
     @FXML
-    private ComboBox<Integer> timerOptions;
+    private ComboBox<String> timerOptions;
 
     @FXML
     private ComboBox<String> ringtoneOptions;
@@ -50,7 +54,7 @@ public class ClockController {
      * cancel button
      */
     @FXML
-    private Button CclBt;
+    private Button stopAlarmBt;
 
     @FXML
     private Slider durationSlider;
@@ -64,18 +68,68 @@ public class ClockController {
     private Timeline clock;
 
     public void initialize() {
-        setupClock();
+        initializeClock();
         initializeTimerOptions();
         initializeRingtoneOptions();
         initializeSlider();
         initializeLable();
-        setupAlarmTimeValidation();
-        setupPlayStopButtons();
+        initializeAlarmTimeValidation();
+        initializePlayStopButtons();
+        initializeTryButton();
+        initializeEnsureButton();
+        initializeCclButton();
     }
 
-    private void setupClock() {
-        clock = new Timeline(new KeyFrame(Duration.ZERO, e -> updateClock()),
-                new KeyFrame(Duration.seconds(1)));
+    private void initializeCclButton() {
+        stopAlarmBt.setOnAction(e -> {
+            alarmTime.setEditable(true);
+            if (ClockAdvancedPlayer.clockAlarmData != null) {
+                ClockAdvancedPlayer.clockAlarmData.allowRun = false;
+            }
+            ClockAdvancedPlayer.closeAdPlayer();
+        });
+    }
+
+    private void initializeEnsureButton() {
+        ensureBt.setOnAction(e -> {
+            if (!isValidTimeFormat(alarmTime.getText())) {
+                alarmTimeColorSet(isValidTimeFormat(alarmTime.getText()));
+                return;
+            }
+            if (ringtoneOptions.getValue() == null) {
+                return;
+            }
+            alarmTime.setEditable(false);
+            String[] stringTime = alarmTime.getText().split(":");
+            ClockAdvancedPlayer.clockAlarmData = new ClockAlarmData(Integer.valueOf(stringTime[0]), Integer.valueOf(stringTime[1]), Integer.valueOf(stringTime[2]), alarmClock.mp3nameToPath(ringtoneOptions.getValue()), ClockAdvancedPlayer.getPercentPosition((int) durationSlider.getValue()), true);
+            ClockAdvancedPlayer.startAlarmThread();
+        });
+    }
+
+
+    private void updateTryBt() {
+        String tryStr = "Try";
+        String closeStr = "Close";
+        if (tryStr.equals(tryBt.getText())) {
+            tryBt.setText(closeStr);
+            ClockAdvancedPlayer.isTryPlay = true;
+            ClockAdvancedPlayer.filePath = alarmClock.mp3nameToPath(ringtoneOptions.getValue());
+            ClockAdvancedPlayer.changePosition((int) durationSlider.getValue());
+        } else {
+            tryBt.setText(tryStr);
+            ClockAdvancedPlayer.closeAdPlayer();
+            ClockAdvancedPlayer.isTryPlay = false;
+        }
+    }
+
+    private void initializeTryButton() {
+        tryBt.setText("Try");
+        tryBt.setOnAction(e -> updateTryBt());
+    }
+
+
+    private void initializeClock() {
+        clock = new Timeline(new KeyFrame(Duration.ZERO, e -> updateClock()), new KeyFrame(Duration.seconds(1)));
         clock.setCycleCount(Animation.INDEFINITE);
         clock.play();
     }
@@ -87,8 +141,11 @@ public class ClockController {
 
 
     private void initializeTimerOptions() {
-        ObservableList<Integer> timerOptionsList = FXCollections.observableArrayList(7, 17, 30);
+        ObservableList<String> timerOptionsList = FXCollections.observableArrayList("7 min", "17 min", "30 min");
         timerOptions.setItems(timerOptionsList);
+        if (!timerOptionsList.isEmpty()) {
+            timerOptions.setValue(timerOptionsList.get(0));
+        }
     }
 
     private void initializeRingtoneOptions() {
@@ -97,9 +154,13 @@ public class ClockController {
         ringtoneOptionsList.addAll(getAudioFileNames(alarmClock.MUSIC_PATH));
         ringtoneOptions.setItems(ringtoneOptionsList);
         if (ringtoneOptionsList.size() != 0) {
-            ringtoneOptions.setPromptText(ringtoneOptionsList.get(0));
-            AdvancedPlayerData.filePath = ringtoneOptionsList.get(0);
+            ringtoneOptions.setValue(ringtoneOptionsList.get(0));
+            ClockAdvancedPlayer.filePath = alarmClock.mp3nameToPath(ringtoneOptionsList.get(0));
         }
+        ringtoneOptions.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
+            String path = alarmClock.mp3nameToPath(ringtoneOptions.getValue());
+            ClockAdvancedPlayer.filePath = path;
+        });
     }
 
     @Deprecated
@@ -136,18 +197,45 @@ public class ClockController {
         return fileName;
     }
 
+    /**
+     * advancePlayer
+     */
+    private void tryPlayAdPlayer() {
+        if (ClockAdvancedPlayer.isTryPlay) {
+            stopAdPlayer();
+            if (ClockAdvancedPlayer.filePath == null) {
+                return;
+            }
+            try {
+                bis = new BufferedInputStream(new FileInputStream(ClockAdvancedPlayer.filePath));
+                ClockAdvancedPlayer.advancedPlayer = new AdvancedPlayer(ClockAdvancedPlayer.bis);
+                ClockAdvancedPlayer.advancedPlayer.play(ClockAdvancedPlayer.percentage);
+            } catch (JavaLayerException | FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+
     private void initializeSlider() {
         // 设置滑块的范围和初始值
         durationSlider.setMin(0);
         durationSlider.setMax(100);
-        durationSlider.setValue(50);
+        durationSlider.setValue(0);
 
+        ClockAdvancedPlayer.filePath = alarmClock.mp3nameToPath(ringtoneOptions.getValue());
         // 添加监听器
         durationSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                durationSlider.setValue((double) newValue);
                 dratLb.setText(String.valueOf(newValue.intValue()));
-                alarmClock.changePosition(newValue.intValue());
+                if (ClockAdvancedPlayer.isTryPlay) {
+                    if (ClockAdvancedPlayer.filePath == null) {
+                        ClockAdvancedPlayer.filePath = alarmClock.mp3nameToPath(ringtoneOptions.getValue());
+                    }
+                    ClockAdvancedPlayer.changePosition(newValue.intValue());
+                }
             }
         });
     }
@@ -156,13 +244,17 @@ public class ClockController {
         dratLb.setText(String.valueOf((int) durationSlider.getValue()));
     }
 
-    private void setupAlarmTimeValidation() {
+    private void alarmTimeColorSet(Boolean timeTextRight) {
+        if (!timeTextRight) {
+            alarmTime.setStyle("-fx-text-fill: red;");
+        } else {
+            alarmTime.setStyle("-fx-text-fill: #2E8B57;");
+        }
+    }
+
+    private void initializeAlarmTimeValidation() {
         alarmTime.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!isValidTimeFormat(newValue)) {
-                alarmTime.setStyle("-fx-text-fill: red;");
-            } else {
-                alarmTime.setStyle("-fx-text-fill: black;");
-            }
+            alarmTimeColorSet(isValidTimeFormat(newValue));
         });
     }
 
@@ -171,21 +263,29 @@ public class ClockController {
         return Pattern.matches(regex, time);
     }
 
-    private void setupRingtoneOptions() {
-        ringtoneOptions.getSelectionModel().selectedItemProperty().addListener(
-                (options, oldValue, newValue) -> {
-                    String path = alarmClock.mp3nameToPath(ringtoneOptions.getValue());
-                    AdvancedPlayerData.filePath = path;
-                }
-        );
-    }
-
-    private void setupPlayStopButtons() {
+    private void initializePlayStopButtons() {
         playBt.setOnAction(e -> playSelectedSong());
         stopBt.setOnAction(e -> stopPlayingSong());
     }
 
+    private void stopAdPlayer() {
+        if (ClockAdvancedPlayer.future != null && !ClockAdvancedPlayer.future.isCancelled()) {
+            ClockAdvancedPlayer.future.cancel(true);
+        }
+        if (ClockAdvancedPlayer.advancedPlayer != null) {
+            ClockAdvancedPlayer.advancedPlayer.close();
+        }
+        if (bis != null) {
+            try {
+                bis.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     private void playSelectedSong() {
+        stopAdPlayer();
         String selectedSong = ringtoneOptions.getValue();
         if (selectedSong == null) {
             selectedSong = ringtoneOptions.getPromptText();
@@ -194,8 +294,7 @@ public class ClockController {
     }
 
     private void stopPlayingSong() {
+        stopAdPlayer();
         alarmClock.stopPlayMusic();
     }
-
-
 }
